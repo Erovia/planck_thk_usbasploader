@@ -3,8 +3,8 @@
 # Currently configured for flashing on to USBASP programmer to give it
 # self-update capability
 
-F_CPU      = 12000000
-DEVICE     = atmega8
+F_CPU      = 16000000
+DEVICE     = atmega32
 
 PROGRAMMER = -c usbasp
 
@@ -15,4 +15,4 @@ PROGRAMMER = -c usbasp
 # These two must be set correctly, but each chip model potentially
 # has different settings.
 #BOOTLOADER_ADDRESS = 0x1800
-#FUSEOPT = -U hfuse:w:0xc0:m -U lfuse:w:0x9f:m
+FUSEOPT = -U lfuse:w:0xae:m -U hfuse:w:0x90:m

@@ -1,3 +1,10 @@
+# Planck Through Hole Kit Bootloader
+
+**This is a fork of [gblargg/usbasploader](https://github.com/gblargg/usbasploader) pre-configured for the THK.**
+
+
+Original README below:
+
 USBaspLoader: USBasp-Compatible Bootloader for AVR
 ==================================================
 This is an experimental version and hasn't been tested on much besides an atmega8.
@@ -113,7 +120,7 @@ Without any configuration, the bootloader will run on reset and wait indefinitel
 * No button/jumper: When turned on, runs program normally. When you do something defined by the program, it directly runs the bootloader.
 
         #define BOOTLOADER_ON_WDT 1
-        
+
         // when you want to enter bootloader from your program:
         cli();
         wdt_enable( WDTO_15MS );
@@ -137,17 +144,17 @@ Entry/exit can be further customized with three macros that are run before, duri
     int main( void )
     {
         bootLoaderInit(); // might decide to call leaveBootloader()
-    
+
         _delay_ms( 260 );
-    
+
         while ( bootLoaderCondition() )
         {
             run_bootloader();
-            
+
             #if BOOTLOADER_CAN_EXIT
                 if ( avrdude_exited )
                     break;
-                
+
                 #ifdef AUTO_EXIT_MS
                     if ( elapsed_milliseconds >= AUTO_EXIT_MS &&
                             !avrdude_connected )
@@ -155,7 +162,7 @@ Entry/exit can be further customized with three macros that are run before, duri
                 #endif
             #endif
         }
-    
+
         leaveBootloader();
     }
 
@@ -181,13 +188,13 @@ The following example invokes the bootloader only when a jumper on port B2 is ti
     {
         if ( !(MCUCSR & (1<<EXTRF)) )
             leaveBootloader(); // wasn't external reset, so run user program
-        
+
         PORTB |= 1<<2; // weak pull-up on jumper
     }
-    
+
     // Run bootloader while jumper pin is pulled low
     #define bootLoaderCondition() ((PINB & (1<<2)) == 0)
-    
+
     static void bootLoaderExit( void )
     {
         PORTB &= ~(1<<2); // restore to original state as input
@@ -235,7 +242,7 @@ The bootloader sits at the top of flash memory and has its own interrupt vector 
 First, find fuse bits documentation. For the atmega8, we have the following (remember that a bit set to 1 means that the feature is DISABLED, and 0 means ENABLED):
 
     Table 87. Fuse High Byte
-                    
+
     Name      Bit   Default   Function
     RSTDISBL  7     1         Select if PC6 is I/O pin or RESET pin
     WDTON     6     1         WDT always on
@@ -249,7 +256,7 @@ First, find fuse bits documentation. For the atmega8, we have the following (rem
 (fuse low byte doesn't have any relevant bits)
 
     Table 82. Boot Size Configuration
-    
+
     BOOTSZ1     BOOTSZ0     Size        Boot Reset Address
     1           1           128 words   0xF80
     1           0           256 words   0xF00
@@ -298,7 +305,7 @@ To do
 
 Design
 ------
-* Chip erase stopping at the bootloader: there's no way the bootloader can erase itself without jumping through hoops. If the chip erase were to go to the end of flash, it would erase the loop itself before then, unless we arranged for the erase loop 
+* Chip erase stopping at the bootloader: there's no way the bootloader can erase itself without jumping through hoops. If the chip erase were to go to the end of flash, it would erase the loop itself before then, unless we arranged for the erase loop
 
 * Self-update is non-trivial because some chips prevent reflashing from a program not running in the bootloader area at the top of flash. To work around this, a small routine that executes the flash commands is included with the bootloader, and then the updater calls this to do reflashing. One further complication is that the page(s) containing this routine can't be reflashed by that routine since it would erase itself in the middle of the process, so a second copy of this routine is put at the end of flash, and the two used in combination to reflash the entire bootloader area.
 
@@ -323,5 +330,5 @@ Running the code from address 0 gives ample space for the code and debugging fea
 
 After enabling NO_FLASH_WRITE and flashing the device, run the same flash command again to verify basic functionality and read verification. Even though it won't reflash, it will read flash back and verify all data, which should match since it was just actually flashed before this. This tests most of the functionality of the loader. You can also invoke avrdude -t to enter interactive terminal mode to test more features (lock fuses, eeprom access). When ready to test a new revision, just run the bootloader and upload it. This allows easy edit-debug testing of most functionality without a second programmer.
 
--- 
+--
 Shay Green <gblargg@gmail.com>
